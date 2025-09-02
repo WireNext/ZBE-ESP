@@ -4,6 +4,7 @@ import json
 import os
 import glob
 from datetime import datetime
+from bs4 import BeautifulSoup
 
 # URL base para descargar los XML
 BASE_URL = "https://infocar.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication/"
@@ -11,12 +12,23 @@ OUTPUT_DIR = "data"
 GEOJSON_FILE = "low_emission_zones.geojson"
 
 def fetch_xml_urls():
-    """Fetches the list of XML file URLs from the DGT's index page."""
+    """Fetches the list of XML file URLs by parsing the HTML of the DGT's index page."""
     try:
         response = requests.get(BASE_URL)
         response.raise_for_status()
-        xml_urls = [BASE_URL + line.strip() for line in response.text.splitlines() if line.strip().endswith(".xml")]
+        
+        # Use BeautifulSoup to parse the HTML and find all links
+        soup = BeautifulSoup(response.text, 'html.parser')
+        links = soup.find_all('a')
+        
+        xml_urls = []
+        for link in links:
+            href = link.get('href')
+            if href and href.endswith('.xml'):
+                xml_urls.append(BASE_URL + href)
+        
         return xml_urls
+        
     except requests.exceptions.RequestException as e:
         print(f"Error fetching the XML URL list: {e}")
         return []
