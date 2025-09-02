@@ -9,14 +9,15 @@ on:
 jobs:
   update-map:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # 👈 Añade esta línea
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          # Permite que el token del flujo de trabajo haga 'push' a la rama principal.
           persist-credentials: false
-          fetch-depth: 0 # Es necesario para poder hacer un 'commit' en la rama.
-      
+          fetch-depth: 0
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -34,7 +35,6 @@ jobs:
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git status
           if [[ -n $(git status --porcelain data/low_emission_zones.geojson) ]]; then
             git add data/low_emission_zones.geojson
             git commit -m "chore: Update low emission zones data"
