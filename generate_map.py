@@ -5,6 +5,7 @@ import os
 import glob
 from datetime import datetime
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin # <-- Nueva importación
 
 # URL base para descargar los XML
 BASE_URL = "https://infocar.dgt.es/datex2/v3/dgt/zbe/ControledZonePublication/"
@@ -17,7 +18,6 @@ def fetch_xml_urls():
         response = requests.get(BASE_URL)
         response.raise_for_status()
         
-        # Use BeautifulSoup to parse the HTML and find all links
         soup = BeautifulSoup(response.text, 'html.parser')
         links = soup.find_all('a')
         
@@ -25,7 +25,9 @@ def fetch_xml_urls():
         for link in links:
             href = link.get('href')
             if href and href.endswith('.xml'):
-                xml_urls.append(BASE_URL + href)
+                # Usar urljoin para construir la URL de forma segura
+                full_url = urljoin(BASE_URL, href)
+                xml_urls.append(full_url)
         
         return xml_urls
         
